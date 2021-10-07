@@ -1,11 +1,11 @@
 # Number Conversion
-숫자로 작성된 text file을 다른 숫자 format으로 변형하여 저장한다.
+숫자로 작성된 text file을 다른 숫자 format으로 변형하여 저장한다.  
 binary와 hexadecimal 숫자 format을 지원한다.
 - convert_num_bin2hex.py 
 - convert_num_hex2bin.py
 
-ROM Code를 Chip에 구울때, 사용하지 않는 memory 영역에도 임의의 data를 write 해야 한다.
-임의의 데이터는 "0"과 "1"을 50:50 으로 비율을 맞춰서 write 한다.
+ROM Code를 Chip에 구울때, 사용하지 않는 memory 영역에도 임의의 data를 write 해야 한다.  
+임의의 data는 원하는 data 값과 얼마나 write 할지를 설정할 수 있다.
 - add_rom_dummy.py
 
 ## convert_num_bin2hex.py 
@@ -95,4 +95,8 @@ optional arguments:
 }
 ```
 
+- example
+```
+add_rom_dummy.py -i cfg.json
+```
 
