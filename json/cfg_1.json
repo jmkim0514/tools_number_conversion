@@ -1,0 +1,8 @@
+{
+    "input_file_path" : " ",
+    "output_file_path" : "./output/data_08.bin",
+    "pattern" : [
+        {"value" : "0000", "count" : 3},
+        {"value" : "1111", "count" : 8}
+    ]
+}

@@ -1,15 +1,16 @@
 # Number Conversion
 숫자로 작성된 text file을 다른 숫자 format으로 변형하여 저장한다.
 binary와 hexadecimal 숫자 format을 지원한다.
-
-Script Name
 - convert_num_bin2hex.py 
 - convert_num_hex2bin.py
 
+ROM Code를 Chip에 구울때, 사용하지 않는 memory 영역에도 임의의 data를 write 해야 한다.
+임의의 데이터는 "0"과 "1"을 50:50 으로 비율을 맞춰서 write 한다.
+- add_rom_dummy.py
+
 ## convert_num_bin2hex.py 
 - hexadecimal을 binary로 저장한다.
-- hex로 출력해야 하므로 binary 숫자 갯수가 4 align 되야 한다. 
-
+- bin --> hex 변환하는 구조이므로 bin 숫자 갯수는 4 align 되어야 한다.
 - 실행명령
   - i : 2진수로 작성된 파일 위치
   - o : 결과 파일 이름, 작성 안하면 "imsi.hex" 파일이름으로 출력
@@ -62,3 +63,36 @@ convert_num_hex2bin.py -i ./input/data.hex
 convert_num_bin2hex.py -i data.hex -o data.bin
 convert_num_bin2hex.py -i data.hex -o data.bin -on 16
 ```
+
+## add_rom_dummy.py
+- romdata format 을 맞추기 위해 기존 romcode에 data를 추가 한다.
+- json file 로 설정을 한다.
+- 실행명령
+  - i : 설정을 위한 json file 파일 위치
+```
+usage: add_rom_dummy.py [-h] -i json_file_path
+
+Add Dummy data for ROMCODE
+
+optional arguments:
+  -h, --help    show this help message and exit
+  -i file_path  JSON file path (Configuration file)
+```
+- JSON File Format
+  - input_file_path : 입력 파일 path
+  - output_file_path : 출력 파일 path
+  - pattern : 추가하려는 dummy data pattern, list 형태이고 list[0] 부터 동작한다.
+  - value : 추가하려는 dummy data 값
+  - count : value(dummy data)를 얼마나 write 할지, 8이면 8번 write 한다.
+```json
+{
+  "input_file_path" : "input/test.bin",
+  "output_file_path" : "output/test.bin",
+  "pattern" : [
+    {"value": "00000000", "count": 8},
+    {"value": "11111111", "count": 8}
+  ]
+}
+```
+
+
