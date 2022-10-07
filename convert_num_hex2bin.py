@@ -1,3 +1,16 @@
+#!/user/de03/DE/util/anaconda3/bin/python3
+#===============================================================================
+#  File name   : convert_num_hex2bin.py
+#  Version     : v0p0
+#  Description : convert hexadecimal to binary
+#  Simulator   : Python 3
+#  Created by  : Kim jong-min
+#  Date        : 2021/07/07     1'st Release
+#===============================================================================
+#  History
+#-------------------------------------------------------------------------------
+# 2021-07-07 Jongmin-Kim    1st Release
+#===============================================================================
 import os
 import argparse
 
