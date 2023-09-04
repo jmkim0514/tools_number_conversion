@@ -82,15 +82,30 @@ print ("===============================================")
 
 for n, i in enumerate(header.readlines()):
     i = i.strip()
-    # print(int(i, 16))
-    num = int(i, 16)
-    
-    data = struct.pack('B', num)
+    #num = int(i, 16)
+    num = i
+    print(num)    
+    data = struct.pack('c', num)
     print('{0} {1} {2} {3}'.format(n, num, i, data))
     ptr_out.write(data)
 
+# for n, i in enumerate(header.readlines()):
+#     # i = i.strip()
+#     # num = int(i, 16)
+#     print(i)
+#     data = bytes.fromhex(i)
+#     ptr_out.write(data)
+#     if n>32:
+#         break
 
 
+# for i in range(16):
+#     tmp = '{0}'.format(hex(i))[2:]
+#     tmp = '0'+tmp
+
+#     print(tmp)
+#     data = bytes.fromhex(tmp)
+#     ptr_out.write(data)
 
 ptr_out.close()
 
