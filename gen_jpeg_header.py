@@ -14,6 +14,7 @@
 import os
 import argparse
 import struct
+import binascii
 
 parser = argparse.ArgumentParser(description="Generate JPEG Header : ")
 # parser.add_argument('-i', metavar="file_path", required=True, help="Input image file path (text file (hex))")
@@ -31,7 +32,7 @@ args = parser.parse_args()
 
 
 # ptr_in = open(args.i, 'r')
-ptr_out = open(args.o, 'wb')
+# ptr_out = open(args.o, 'wb')
 
 # __DEBUG__ = False
 # NUM_OF_BIN = int(args.on)
@@ -80,6 +81,111 @@ print ("===============================================")
 print (" Generate JPEG Header")
 print ("===============================================")
 
+print(ord('a'))
+print('---')
+print(chr(15))
+print('==========')
+exit()
+
+
+data = struct.pack('BBB', 9, 10, 11)
+print(data)
+# exit()
+# imsi = '91'
+# binary_data = bytes.fromhex(imsi)
+# print(binary_data)
+# exit()
+# header = open('./jpeg/header_format.txt', 'r')
+ptr_out = open(args.o, 'wb')
+# data = struct.pack('BBBB', 9, 10, 11, 12)
+# print(data)
+data = b"\x08\x09\x0A\x0b\x0c"
+ptr_out.write(data)
+
+# l = [8, 9, 10, 11]
+
+# ptr_out.write(bytes(l))
+
+#ptr_out.write(b'\x08\x09')
+# for n, num in enumerate(header.readlines()):
+#     num = int(num.strip(), 16)
+#     data = struct.pack('B', num)
+#     print('{0} {1}'.format(num, data))
+#     ptr_out.write(data)
+
+ptr_out.close()
+exit()
+
+
+# header = open('./jpeg/header_format.txt', 'w')
+
+# for i in range(0, 16):
+#     i = hex(i)[2:]
+#     for j in range(0, 16):
+#         j = hex(j)[2:]
+#         header.write('{0}{1}\n'.format(i, j))
+# #     num = int(num.strip(), 16)
+# #     data = struct.pack('B', num)
+# #     print('{0} {1}'.format(num, data))
+# #     ptr_out.write(data)
+
+# # ptr_out.close()
+# exit()
+
+
+
+
+
+header = open('./jpeg/header_format.txt', 'r')
+ptr_out = open(args.o, 'wb')
+for n, num in enumerate(header.readlines()):
+    num = int(num.strip(), 16)
+    data = struct.pack('B', num)
+    print('{0} {1}'.format(num, data))
+    ptr_out.write(data)
+
+ptr_out.close()
+exit()
+
+
+
+
+with open('./jpeg/header_format.txt') as f, open('bin.dat', "wb") as fout:
+    for line in f.readlines():
+        fout.write(
+            # binascii.unhexlify(''.join(line.split()))
+            bytes((line))
+        )
+
+exit()
+
+message = "06 07 08 09 0a 0b 0c 0d 0e 0f"
+binary_txt = " ".join(format(ord(c), "b") for c in message)
+#for i in binary_txt.split(" "):
+for i in message.split(" "):
+    i = i.strip()
+    print(i)
+    i = struct.pack('cc', i[:1], i[1:])
+#     i = chr(int(i, 2))
+#     print(i)
+# #     print(i)
+    ptr_out.write(i)
+# ptr_out.close()
+print(binary_txt)
+exit()
+
+# normal = "".join(chr(int(c, 2)) for c in binary_txt.split(" "))
+
+# print(normal)
+
+# message = "Hello Word! This is my message!"
+# binary_txt = " ".join(format(ord(c), "b") for c in message)
+
+# normal = "".join(chr(int(c, 2)) for c in binary_txt.split(" "))
+
+# print(normal)
+# exit()
+
 # binfile = open('bin.dat', 'wb')
 
 # for num in range(50):
@@ -87,23 +193,29 @@ print ("===============================================")
 #     binfile.write(data)
 
 # exit()
-
-
 print('hi')
 with open('./jpeg/header_format.txt', 'r') as header, open('bin.dat', 'wb') as binfile:
-    hex_data = header.read().strip()
-    bin_data = bytes.fromhex(hex_data)
-    binfile.write(bin_data)
-# for n, num in enumerate(header.readlines()):
-#     num = int(num.strip(), 16)
 
-#     # num = str(num)
-#     # print(type(num))
-#     data = struct.pack('B', num)
-#     print('{0} {1}'.format(num, data))
-#     binfile.write(data)
+    for txt_hex in header.readlines():
+        txt_hex = txt_hex.strip()
+        txt_int = str(int(txt_hex, 16))
+        print('----')
+        print(txt_int)
+        #txt_bin = format(ord(txt_hex[1:]), "b")
+        txt_bin = format(ord(txt_int), "b")
+        print(txt_bin)
 
-binfile.close()
+    # hex_data = header.read().strip()
+    # bin_data = bytes.fromhex(hex_data)
+    # binfile.write(bin_data)
+
+
+# with open('./jpeg/header_format.txt', 'r') as header, open('bin.dat', 'wb') as binfile:
+#     hex_data = header.read().strip()
+#     bin_data = bytes.fromhex(hex_data)
+#     binfile.write(bin_data)
+
+
 
     # print('{0} {1} {2} {3}'.format(n, num, i, data))
     # ptr_out.write(data)
