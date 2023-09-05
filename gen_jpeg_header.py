@@ -28,7 +28,7 @@ args = parser.parse_args()
 #     exit()
 
 
-header = open('./jpeg/header_format.txt', 'r')
+
 
 # ptr_in = open(args.i, 'r')
 ptr_out = open(args.o, 'wb')
@@ -80,14 +80,33 @@ print ("===============================================")
 print (" Generate JPEG Header")
 print ("===============================================")
 
-for n, i in enumerate(header.readlines()):
-    i = i.strip()
-    #num = int(i, 16)
-    num = i
-    print(num)    
-    data = struct.pack('c', num)
-    print('{0} {1} {2} {3}'.format(n, num, i, data))
-    ptr_out.write(data)
+# binfile = open('bin.dat', 'wb')
+
+# for num in range(50):
+#     data = struct.pack('B', num)
+#     binfile.write(data)
+
+# exit()
+
+
+print('hi')
+with open('./jpeg/header_format.txt', 'r') as header, open('bin.dat', 'wb') as binfile:
+    hex_data = header.read().strip()
+    bin_data = bytes.fromhex(hex_data)
+    binfile.write(bin_data)
+# for n, num in enumerate(header.readlines()):
+#     num = int(num.strip(), 16)
+
+#     # num = str(num)
+#     # print(type(num))
+#     data = struct.pack('B', num)
+#     print('{0} {1}'.format(num, data))
+#     binfile.write(data)
+
+binfile.close()
+
+    # print('{0} {1} {2} {3}'.format(n, num, i, data))
+    # ptr_out.write(data)
 
 # for n, i in enumerate(header.readlines()):
 #     # i = i.strip()
