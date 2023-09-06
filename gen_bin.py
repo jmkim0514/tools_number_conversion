@@ -15,19 +15,41 @@ import os
 import argparse
 import struct
 import binascii
+from binascii import unhexlify
+from PIL import Image
 
 
+width, height = 640, 480
+background_color = (255, 255, 255)  # 흰 배경
 
-ptr_out = open('bin.dat', 'wb')
-# for num in range(255):
-#     # print(num)
-#     print('{0} {1}'.format(num, struct.pack('B', num)))
+# 헤더 설정
+jpeg_info = {
+    "dpi": (300, 300),  # 해상도 설정 (dots per inch)
+    "quality": 95,      # 이미지 품질 (0~100)
+    "progressive": True  # 프로그레시브 JPEG로 설정
+}
 
-# imsi = 'a'.encode('utf-8') #euc-kr
-imsi = 'a'.encode('euc-kr') #euc-kr
-binary_data = bytes(imsi)
-ptr_out.write(binary_data)
+# 이미지 생성 및 저장
+image = Image.new("RGB", (width, height), background_color)
+image.save("sample.jpg", "JPEG", **jpeg_info)
+
 exit()
+
+# def hex_to_binary(input_file, output_file):
+#     try:
+#         with open(input_file, 'r') as hex_file, open(output_file, 'wb') as binary_file:
+#             hex_data = hex_file.read().strip()
+#             binary_data = bytes.fromhex(hex_data)
+#             binary_file.write(binary_data)
+#         print(f'Successfully converted {input_file} to {output_file}')
+#     except Exception as e:
+#         print(f'An error occurred: {str(e)}')
+
+
+# hex_to_binary('./jpeg/num_0_to_16.txt', 'bin.dat')
+
+# print('done')
+# exit()
 
 #-------------------------------------------------------------------------------
 # with open('./jpeg/ja.jpg', 'rb') as f, open('bin.dat', 'wb') as fp_w:
@@ -46,26 +68,44 @@ exit()
 #         print(data)
 # exit()
 
+#-------------------------------------------------------------------------------
+ptr_out = open('bin.dat', 'wb')
+for num in range(16):
+
+    # print('{0} {1}'.format(num, struct.pack('B', num)))
+
+    # if num==10:
+    #     data = struct.pack('s', 'a')
+    #     ptr_out.write(data)
+    #     # ptr_out.write(data)
+    # else:
+    #     data = struct.pack('B', num)
+    #     ptr_out.write(data)
+
+    data = struct.pack('B', num)
+    ptr_out.write(data)
+
+exit()
+
+
 
 #-------------------------------------------------------------------------------
-ptr_out = open('bin.dat', 'wb', encoding=None)
-for num in range(255):
+ptr_out = open('bin.dat', 'wb')
+for num in range(16):
     # print(num)
     print('{0} {1}'.format(num, struct.pack('B', num)))
-    if num==10:
-        imsi = '10'.encode('utf-8') #euc-kr
-        binary_data = bytes(imsi)
-        ptr_out.write(binary_data)
 
-
-
+    # if num==10:
+    #     imsi = '10'.encode('utf-8') #euc-kr
+    #     binary_data = bytes(imsi)
+    #     ptr_out.write(binary_data)
+    #     # ptr_out.write(data)
+    # else:
+        # data = struct.pack('B', num)
         # ptr_out.write(data)
-    else:
-        data = struct.pack('B', num)
-        ptr_out.write(data)
 
-    # data = struct.pack('B', num)
-    # ptr_out.write(data)
+    data = struct.pack('B', num)
+    ptr_out.write(data)
 
 exit()
 
