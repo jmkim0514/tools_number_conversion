@@ -17,23 +17,98 @@ import struct
 import binascii
 from binascii import unhexlify
 from PIL import Image
+import io
+import numpy as np
 
 
-width, height = 640, 480
-background_color = (255, 255, 255)  # 흰 배경
+#-------------------------------------------------------------------------------
+# ja.jpg -> hex
 
-# 헤더 설정
-jpeg_info = {
-    "dpi": (300, 300),  # 해상도 설정 (dots per inch)
-    "quality": 95,      # 이미지 품질 (0~100)
-    "progressive": True  # 프로그레시브 JPEG로 설정
-}
+input_file = './jpeg/ja.jpg'
+num_start = 608 + 15 # 0x260 + 14
 
-# 이미지 생성 및 저장
-image = Image.new("RGB", (width, height), background_color)
-image.save("sample.jpg", "JPEG", **jpeg_info)
+# input_file = './jpeg/dice.jpg'
+# num_start = 960 # 0x3c0
 
+
+# output_file = './jpeg/ja_data.txt'
+
+# n = 0
+
+with open(input_file, 'rb') as ptr_rd, open(output_file, 'w') as ptr_wr:
+    while True:
+        data = ptr_rd.read(1)
+        if data==b'':
+            break
+
+        if n>=num_start:
+            # print('{0} {1} {2}'.format(data, ord(data), hex(ord(data))[2:]))
+            hex_data = '{0:0>2}\n'.format(hex(ord(data))[2:])
+            ptr_wr.write(hex_data)
+
+        n = n + 1
+
+# exit()
+
+#-------------------------------------------------------------------------------
+# ja_data.txt .jpg -> hex
+
+input_header = './jpeg/ja_header.txt'
+input_header = './jpeg/ja_header_dice.txt'
+
+input_data   = './jpeg/ja_data.txt'
+output_file = './jpeg/ja_result.jpg'
+
+with open(input_header, 'r') as ptr_h, open(input_data, 'r') as ptr_data, open(output_file, 'wb') as ptr_wr:
+    for data in ptr_h.readlines():
+        data = int(data.strip(), 16)
+        data = struct.pack('B', data)
+        ptr_wr.write(data)
+
+    for data in ptr_data.readlines():
+        data = int(data.strip(), 16)
+        data = struct.pack('B', data)
+        ptr_wr.write(data)
+
+
+    # while True:
+    #     data = ptr_rd.read(1)
+    #     if data==b'':
+    #         break
+
+    #     if n>=num_start:
+    #         # print('{0} {1} {2}'.format(data, ord(data), hex(ord(data))[2:]))
+    #         hex_data = '{0:0>2}\n'.format(hex(ord(data))[2:])
+    #         ptr_wr.write(hex_data)
+
+    #     n = n + 1
+print('Done....')
 exit()
+
+
+
+# header = open('./jpeg/header_format.txt', 'r')
+# ptr_out = open('bin.dat', 'wb')
+# for n, num in enumerate(header.readlines()):
+#     data = int(num.strip(), 16)
+#     data = struct.pack('B', data)
+#     ptr_out.write(data)
+
+# ptr_out.close()
+# exit()
+
+
+#-------------------------------------------------------------------------------
+header = open('./jpeg/header_format.txt', 'r')
+ptr_out = open('bin.dat', 'wb')
+for n, num in enumerate(header.readlines()):
+    data = int(num.strip(), 16)
+    data = struct.pack('B', data)
+    ptr_out.write(data)
+
+ptr_out.close()
+exit()
+
 
 # def hex_to_binary(input_file, output_file):
 #     try:
@@ -69,60 +144,37 @@ exit()
 # exit()
 
 #-------------------------------------------------------------------------------
-ptr_out = open('bin.dat', 'wb')
-for num in range(16):
+# ptr_out = open('bin.dat', 'wb')
+# for num in range(16):
 
-    # print('{0} {1}'.format(num, struct.pack('B', num)))
+#     data = struct.pack('B', num)
+#     ptr_out.write(data)
 
-    # if num==10:
-    #     data = struct.pack('s', 'a')
-    #     ptr_out.write(data)
-    #     # ptr_out.write(data)
-    # else:
-    #     data = struct.pack('B', num)
-    #     ptr_out.write(data)
-
-    data = struct.pack('B', num)
-    ptr_out.write(data)
-
-exit()
+# exit()
 
 
 
 #-------------------------------------------------------------------------------
-ptr_out = open('bin.dat', 'wb')
-for num in range(16):
-    # print(num)
-    print('{0} {1}'.format(num, struct.pack('B', num)))
+# ptr_out = open('bin.dat', 'wb')
+# for num in range(16):
+#     # print(num)
+#     print('{0} {1}'.format(num, struct.pack('B', num)))
 
-    # if num==10:
-    #     imsi = '10'.encode('utf-8') #euc-kr
-    #     binary_data = bytes(imsi)
-    #     ptr_out.write(binary_data)
-    #     # ptr_out.write(data)
-    # else:
-        # data = struct.pack('B', num)
-        # ptr_out.write(data)
+#     # if num==10:
+#     #     imsi = '10'.encode('utf-8') #euc-kr
+#     #     binary_data = bytes(imsi)
+#     #     ptr_out.write(binary_data)
+#     #     # ptr_out.write(data)
+#     # else:
+#         # data = struct.pack('B', num)
+#         # ptr_out.write(data)
 
-    data = struct.pack('B', num)
-    ptr_out.write(data)
+#     data = struct.pack('B', num)
+#     ptr_out.write(data)
 
-exit()
+# exit()
 
-#-------------------------------------------------------------------------------
-header = open('./jpeg/header_format.txt', 'r')
-# header = open('./jpeg/imsi.txt', 'r')
-ptr_out = open('bin.dat', 'wb')
-for n, num in enumerate(header.readlines()):
-    if n%2==0:
-        d0 = int(num.strip(), 16)
-    elif n%2==1:
-        d1 = int(num.strip(), 16)
-        data = struct.pack('BB', d0, d1)
-        ptr_out.write(data)
 
-ptr_out.close()
-exit()
 
 
 #-------------------------------------------------------------------------------
