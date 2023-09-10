@@ -31,6 +31,38 @@ num_start = 608 + 15 # 0x260 + 14
 # num_start = 960 # 0x3c0
 
 
+output_file = './jpeg/ja_data.bin'
+
+# n = 0
+
+with open(input_file, 'rb') as ptr_rd, open(output_file, 'w') as ptr_wr:
+    while True:
+        data = ptr_rd.read(1)
+        if data==b'':
+            break
+
+        if n>=num_start:
+            # print('{0} {1} {2}'.format(data, ord(data), hex(ord(data))[2:]))
+            hex_data = '{0:0>2}\n'.format(hex(ord(data))[2:])
+            ptr_wr.write(hex_data)
+
+        n = n + 1
+
+# exit()
+
+#-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+# ja.jpg -> hex
+
+input_file = './jpeg/ja.jpg'
+num_start = 608 + 15 # 0x260 + 14
+
+# input_file = './jpeg/dice.jpg'
+# num_start = 960 # 0x3c0
+
+
 # output_file = './jpeg/ja_data.txt'
 
 # n = 0
