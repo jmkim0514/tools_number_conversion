@@ -16,232 +16,178 @@ import argparse
 import struct
 import binascii
 
-parser = argparse.ArgumentParser(description="Generate JPEG Header : ")
-# parser.add_argument('-i', metavar="file_path", required=True, help="Input image file path (text file (hex))")
-parser.add_argument('-o', metavar="file_path", required=True, default='output.jpg', help="Output JPEG File Path (default=output.bin)")
-# parser.add_argument('-w', metavar="width", required=True, help="Image Width")
-# parser.add_argument('-h', metavar="height", required=True, help="Image Height")
-# #parser.add_argument('-u', action="store_true", help="Prints hex values in uppercase. (default=lowercase)")
-args = parser.parse_args()
+JPEG_HEADER = """
+ff d8 ff e0 00 10 4a 46 49 46 00 01 01 00 00 01
+00 01 00 00 ff db 00 43 00 01 01 01 01 01 01 01
+01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+01 01 01 01 01 01 01 01 01 ff db 00 43 01 01 01
+01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+01 01 01 01 01 01 01 01 01 01 01 01 01 01 ff c0
+00 11 08 {0} {1} 03 01 11 00 02 11 01 03 11
+01 ff c4 00 1f 00 00 03 01 01 01 01 01 01 01 01
+01 00 00 00 00 00 00 01 02 03 04 05 06 07 08 09
+0a 0b ff c4 00 b5 10 00 02 01 03 03 02 04 03 05
+05 04 04 00 00 01 7d 01 02 03 00 04 11 05 12 21
+31 41 06 13 51 61 07 22 71 14 32 81 91 a1 08 23
+42 b1 c1 15 52 d1 f0 24 33 62 72 82 09 0a 16 17
+18 19 1a 25 26 27 28 29 2a 34 35 36 37 38 39 3a
+43 44 45 46 47 48 49 4a 53 54 55 56 57 58 59 5a
+63 64 65 66 67 68 69 6a 73 74 75 76 77 78 79 7a
+83 84 85 86 87 88 89 8a 92 93 94 95 96 97 98 99
+9a a2 a3 a4 a5 a6 a7 a8 a9 aa b2 b3 b4 b5 b6 b7
+b8 b9 ba c2 c3 c4 c5 c6 c7 c8 c9 ca d2 d3 d4 d5
+d6 d7 d8 d9 da e1 e2 e3 e4 e5 e6 e7 e8 e9 ea f1
+f2 f3 f4 f5 f6 f7 f8 f9 fa ff c4 00 1f 01 00 03
+01 01 01 01 01 01 01 01 01 00 00 00 00 00 00 01
+02 03 04 05 06 07 08 09 0a 0b ff c4 00 b5 11 00
+02 01 03 03 02 04 03 05 05 04 04 00 00 01 7d 01
+02 03 00 04 11 05 12 21 31 41 06 13 51 61 07 22
+71 14 32 81 91 a1 08 23 42 b1 c1 15 52 d1 f0 24
+33 62 72 82 09 0a 16 17 18 19 1a 25 26 27 28 29
+2a 34 35 36 37 38 39 3a 43 44 45 46 47 48 49 4a
+53 54 55 56 57 58 59 5a 63 64 65 66 67 68 69 6a
+73 74 75 76 77 78 79 7a 83 84 85 86 87 88 89 8a
+92 93 94 95 96 97 98 99 9a a2 a3 a4 a5 a6 a7 a8
+a9 aa b2 b3 b4 b5 b6 b7 b8 b9 ba c2 c3 c4 c5 c6
+c7 c8 c9 ca d2 d3 d4 d5 d6 d7 d8 d9 da e1 e2 e3
+e4 e5 e6 e7 e8 e9 ea f1 f2 f3 f4 f5 f6 f7 f8 f9
+fa ff da 00 0c 03 01 00 02 11 03 11 00 3f 00"""
 
-# if os.path.isfile(args.i)==False:
-#     print ("[LOG] *E, Can not find input file = ", args.i)
-#     exit()
 
+def is_text_file(file_path, num_bytes=512):
+    try:
+        with open(file_path, 'rb') as file:
+            content = file.read(num_bytes)
+        if b'\x00' in content:  # 이진 데이터에 널 바이트가 포함되어 있을 수 있으므로 확인
+            return False
+        # UTF-8으로 디코딩하여 에러가 발생하지 않으면 텍스트로 간주
+        content.decode('utf-8')
+        return True
+    except (UnicodeDecodeError, FileNotFoundError):
+        return False
 
+def get_int(digit_i):
+    if type(digit_i)==int:
+        return digit_i
+    elif type(digit_i)==str:
+        if digit_i.isdigit()         : return int(digit_i)
+        elif digit_i.startswith("0x"): return int(digit_i[2:], 16)
+        else:
+            print('[LOG] *E, Not Supported Number Format = '+digit_i)
+            print('[LOG] Supported Format Example : 10, 0xa')
+            exit()
+    else:
+        print('[LOG] *E, Not Supported Number Format = '+digit_i)
+        print('[LOG] Supported Format : (int), (str)')
+        exit()
 
+def get_hex2(data_i):
+    data = hex(data_i)[2:]
+    result = '{0:0>4}'.format(data)
+    result = result[:2]+' '+result[2:]
+    return result
 
-# ptr_in = open(args.i, 'r')
-# ptr_out = open(args.o, 'wb')
-
-# __DEBUG__ = False
-# NUM_OF_BIN = int(args.on)
-# OBIT = int(NUM_OF_BIN/4)
+def get_header(width_i, height_i):
+    width = get_hex2(get_int(width_i))
+    height = get_hex2(get_int(height_i))
+    return JPEG_HEADER.format(width, height)
 
 #------------------------------------------------------------------------------
-# Function
+# Main - @mark
 #------------------------------------------------------------------------------
-# def write_file(istr):
-#     """Prints the 'istr' as much as NUM_OF_BIN size and Returns the remaining 'istr'
-    
-#     Args:
-#       istr : input string (hexadecimal)
-    
-#     Return:
-#        Remaining 'istr'
-#     """
-#     if __DEBUG__:
-#       print ("========")
-#       print (istr)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate JPEG Header", add_help=False)
+    parser.add_argument('-i', required=True, metavar="input_file", help="Input Data File Path, Text Format (str)")
+    parser.add_argument('-o', required=True, metavar="output_file", help="Output JPEG File, Binary Format (str)")
+    parser.add_argument('-w', required=True, metavar="image_width", help="Image Width (int)")
+    parser.add_argument('-h', required=True, metavar="image_height", help="Image Height (int)")
+    parser.add_argument('-help', '-help', action='help', default=argparse.SUPPRESS, help='Show this help message and exit')
 
-#     while (len(istr)*4)>=NUM_OF_BIN:
-#         out_str = bin(int(istr[-OBIT:], 16))[2:] #.zfill(NUM_OF_BIN)
-#         if __DEBUG__: print("{0:0>{1}}".format(out_str, NUM_OF_BIN))
-#         ptr_out.write("{0:0>{1}}\n".format(out_str, NUM_OF_BIN))
-#         istr = istr[:-OBIT]
-#     return istr
-
-#------------------------------------------------------------------------------
-# main
-#------------------------------------------------------------------------------
-
-# line = ""z
-# for line_new in ptr_in.readlines():
-#     if line_new.endswith('\n'):
-#         line_new = line_new[:-1]
-    
-#     line = line_new + line
-    
-#     line = write_file(line)
-    
-# ptr_in.close()
-# ptr_out.close()
-
-print ("===============================================")
-print (" Generate JPEG Header")
-print ("===============================================")
-
-print(ord('a'))
-print('---')
-print(chr(15))
-print('==========')
-exit()
+    # input_file = './jpeg/ja_data.txt'
+    # input_file = './jpeg/test1_192x192_data.txt'
+    # output_file = './imsi.jpg'
+    args = parser.parse_args()
+    input_file = args.i
+    output_file = args.o
+    image_width = args.w
+    image_height = args.h
 
 
-data = struct.pack('BBB', 9, 10, 11)
-print(data)
-# exit()
-# imsi = '91'
-# binary_data = bytes.fromhex(imsi)
-# print(binary_data)
-# exit()
-# header = open('./jpeg/header_format.txt', 'r')
-ptr_out = open(args.o, 'wb')
-# data = struct.pack('BBBB', 9, 10, 11, 12)
-# print(data)
-data = b"\x08\x09\x0A\x0b\x0c"
-ptr_out.write(data)
-
-# l = [8, 9, 10, 11]
-
-# ptr_out.write(bytes(l))
-
-#ptr_out.write(b'\x08\x09')
-# for n, num in enumerate(header.readlines()):
-#     num = int(num.strip(), 16)
-#     data = struct.pack('B', num)
-#     print('{0} {1}'.format(num, data))
-#     ptr_out.write(data)
-
-ptr_out.close()
-exit()
+    header = get_header(image_width, image_height)
+    print(header)
+    exit()
+    # gen_jpeg(input_file, output_file, header)
 
 
-# header = open('./jpeg/header_format.txt', 'w')
-
-# for i in range(0, 16):
-#     i = hex(i)[2:]
-#     for j in range(0, 16):
-#         j = hex(j)[2:]
-#         header.write('{0}{1}\n'.format(i, j))
-# #     num = int(num.strip(), 16)
-# #     data = struct.pack('B', num)
-# #     print('{0} {1}'.format(num, data))
-# #     ptr_out.write(data)
-
-# # ptr_out.close()
-# exit()
+    p_rd = open(input_file, 'r')
+    p_wr = open(output_file, 'wb')
 
 
 
+    for n, line in enumerate(JPEG_HEADER.split('\n')):
+        if line=="":
+            continue
+        line = line.split(' ')
+        # line.reverse()
+        # print(line)
+        for data in line:
+            data = int(data.strip(), 16)
+            data = struct.pack('B', data)
+            p_wr.write(data)
 
+    for data in p_rd.readlines():
+        data = int(data.strip(), 16)
+        data = struct.pack('B', data)
+        p_wr.write(data)
 
-header = open('./jpeg/header_format.txt', 'r')
-ptr_out = open(args.o, 'wb')
-for n, num in enumerate(header.readlines()):
-    num = int(num.strip(), 16)
-    data = struct.pack('B', num)
-    print('{0} {1}'.format(num, data))
-    ptr_out.write(data)
-
-ptr_out.close()
-exit()
-
-
-
-
-with open('./jpeg/header_format.txt') as f, open('bin.dat', "wb") as fout:
-    for line in f.readlines():
-        fout.write(
-            # binascii.unhexlify(''.join(line.split()))
-            bytes((line))
-        )
-
-exit()
-
-message = "06 07 08 09 0a 0b 0c 0d 0e 0f"
-binary_txt = " ".join(format(ord(c), "b") for c in message)
-#for i in binary_txt.split(" "):
-for i in message.split(" "):
-    i = i.strip()
-    print(i)
-    i = struct.pack('cc', i[:1], i[1:])
-#     i = chr(int(i, 2))
-#     print(i)
-# #     print(i)
-    ptr_out.write(i)
-# ptr_out.close()
-print(binary_txt)
-exit()
-
-# normal = "".join(chr(int(c, 2)) for c in binary_txt.split(" "))
-
-# print(normal)
-
-# message = "Hello Word! This is my message!"
-# binary_txt = " ".join(format(ord(c), "b") for c in message)
-
-# normal = "".join(chr(int(c, 2)) for c in binary_txt.split(" "))
-
-# print(normal)
-# exit()
-
-# binfile = open('bin.dat', 'wb')
-
-# for num in range(50):
-#     data = struct.pack('B', num)
-#     binfile.write(data)
-
-# exit()
-print('hi')
-with open('./jpeg/header_format.txt', 'r') as header, open('bin.dat', 'wb') as binfile:
-
-    for txt_hex in header.readlines():
-        txt_hex = txt_hex.strip()
-        txt_int = str(int(txt_hex, 16))
-        print('----')
-        print(txt_int)
-        #txt_bin = format(ord(txt_hex[1:]), "b")
-        txt_bin = format(ord(txt_int), "b")
-        print(txt_bin)
-
-    # hex_data = header.read().strip()
-    # bin_data = bytes.fromhex(hex_data)
-    # binfile.write(bin_data)
-
-
-# with open('./jpeg/header_format.txt', 'r') as header, open('bin.dat', 'wb') as binfile:
-#     hex_data = header.read().strip()
-#     bin_data = bytes.fromhex(hex_data)
-#     binfile.write(bin_data)
+    p_rd.close()
+    p_wr.close()
+    print("Done...")
+    exit()
 
 
 
-    # print('{0} {1} {2} {3}'.format(n, num, i, data))
-    # ptr_out.write(data)
-
-# for n, i in enumerate(header.readlines()):
-#     # i = i.strip()
-#     # num = int(i, 16)
-#     print(i)
-#     data = bytes.fromhex(i)
-#     ptr_out.write(data)
-#     if n>32:
-#         break
-
-
-# for i in range(16):
-#     tmp = '{0}'.format(hex(i))[2:]
-#     tmp = '0'+tmp
-
-#     print(tmp)
-#     data = bytes.fromhex(tmp)
-#     ptr_out.write(data)
-
-ptr_out.close()
-
-
-# print (" - Write file name : ", args.o)
-# print (" - Number of bins : ", NUM_OF_BIN)
-print ("Done...")
-    
+# JPEG_HEADER_ORG = """
+# ff d8 ff e0 00 10 4a 46 49 46 00 01 01 00 00 01
+# 00 01 00 00 ff db 00 43 00 01 01 01 01 01 01 01
+# 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+# 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+# 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+# 01 01 01 01 01 01 01 01 01 ff db 00 43 01 01 01
+# 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+# 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+# 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01
+# 01 01 01 01 01 01 01 01 01 01 01 01 01 01 ff c0
+# 00 11 08 00 60 00 60 03 01 11 00 02 11 01 03 11
+# 01 ff c4 00 1f 00 00 03 01 01 01 01 01 01 01 01
+# 01 00 00 00 00 00 00 01 02 03 04 05 06 07 08 09
+# 0a 0b ff c4 00 b5 10 00 02 01 03 03 02 04 03 05
+# 05 04 04 00 00 01 7d 01 02 03 00 04 11 05 12 21
+# 31 41 06 13 51 61 07 22 71 14 32 81 91 a1 08 23
+# 42 b1 c1 15 52 d1 f0 24 33 62 72 82 09 0a 16 17
+# 18 19 1a 25 26 27 28 29 2a 34 35 36 37 38 39 3a
+# 43 44 45 46 47 48 49 4a 53 54 55 56 57 58 59 5a
+# 63 64 65 66 67 68 69 6a 73 74 75 76 77 78 79 7a
+# 83 84 85 86 87 88 89 8a 92 93 94 95 96 97 98 99
+# 9a a2 a3 a4 a5 a6 a7 a8 a9 aa b2 b3 b4 b5 b6 b7
+# b8 b9 ba c2 c3 c4 c5 c6 c7 c8 c9 ca d2 d3 d4 d5
+# d6 d7 d8 d9 da e1 e2 e3 e4 e5 e6 e7 e8 e9 ea f1
+# f2 f3 f4 f5 f6 f7 f8 f9 fa ff c4 00 1f 01 00 03
+# 01 01 01 01 01 01 01 01 01 00 00 00 00 00 00 01
+# 02 03 04 05 06 07 08 09 0a 0b ff c4 00 b5 11 00
+# 02 01 03 03 02 04 03 05 05 04 04 00 00 01 7d 01
+# 02 03 00 04 11 05 12 21 31 41 06 13 51 61 07 22
+# 71 14 32 81 91 a1 08 23 42 b1 c1 15 52 d1 f0 24
+# 33 62 72 82 09 0a 16 17 18 19 1a 25 26 27 28 29
+# 2a 34 35 36 37 38 39 3a 43 44 45 46 47 48 49 4a
+# 53 54 55 56 57 58 59 5a 63 64 65 66 67 68 69 6a
+# 73 74 75 76 77 78 79 7a 83 84 85 86 87 88 89 8a
+# 92 93 94 95 96 97 98 99 9a a2 a3 a4 a5 a6 a7 a8
+# a9 aa b2 b3 b4 b5 b6 b7 b8 b9 ba c2 c3 c4 c5 c6
+# c7 c8 c9 ca d2 d3 d4 d5 d6 d7 d8 d9 da e1 e2 e3
+# e4 e5 e6 e7 e8 e9 ea f1 f2 f3 f4 f5 f6 f7 f8 f9
+# fa ff da 00 0c 03 01 00 02 11 03 11 00 3f 00"""

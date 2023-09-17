@@ -20,9 +20,22 @@ from PIL import Image
 import io
 import numpy as np
 
+# input_file = "./jpeg/ja_data.bin"
+# output_file = "./jpeg/ja_data.txt"
+input_file = "./jpeg/test1_192x192_data.bin"
+output_file = "./jpeg/test1_192x192_data.txt"
 
+with open(input_file, 'rb') as ptr_rd, open(output_file, 'w') as ptr_wr:
+    while True:
+        data = ptr_rd.read(1)
+        if data==b'':
+            break
 
+        hex_data = '{0:0>2}\n'.format(hex(ord(data))[2:])
+        ptr_wr.write(hex_data)
 
+print('Done...')
+exit()
 #-------------------------------------------------------------------------------
 # ja.jpg -> hex
 
